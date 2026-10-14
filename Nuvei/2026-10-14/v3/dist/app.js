@@ -60,7 +60,7 @@ const merchants = rawMerchants.map((m,i)=>{
 });
 const minBase=5;
 const state={view:'overview',source:'acceptance',crossThreshold:40,upThreshold:40,region:'All',vertical:'All',multi:false,company:'m1',selectedCross:null,selectedUp:null};
-const titles={overview:'Overview',matrix:'Who buys what',crosssell:'Cross-sell: new family',upsell:'Upsell: same family',company:'Customer details',method:'How it works'};
+const titles={overview:'Overview',matrix:'Who buys what',crosssell:'Cross-sell: new family',upsell:'Upsell: same family',company:'Customer details'};
 const familyById=id=>families.find(f=>f.id===id);
 const productById=id=>catalogue.find(p=>p.id===id);
 const rateText=n=>`${n.toFixed(1)}%`;
@@ -139,7 +139,6 @@ function populateFilters(){
   $('#source-filter').innerHTML=families.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
   for(const field of ['region','vertical'])[...new Set(merchants.map(m=>m[field]))].forEach(v=>$(`#${field}-filter`).insertAdjacentHTML('beforeend',`<option>${v}</option>`));
   $('#company-filter').innerHTML=merchants.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
-  $('#taxonomy-table').tBodies[0].innerHTML=families.map(f=>`<tr><th scope="row">${f.name}</th><td>${catalogue.filter(p=>p.family===f.id).map(p=>p.name).join(' · ')}</td></tr>`).join('');
 }
 function topList(selector,list){
   const container=$(selector);
