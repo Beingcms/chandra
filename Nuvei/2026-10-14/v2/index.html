@@ -46,6 +46,32 @@ button.alert-row, button.opp-row { width: 100%; text-align: left; background: wh
 .company-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .company-header h2 { margin-bottom: 8px; font-size: 30px; letter-spacing: -1px; }
 .company-header p:last-child { color: var(--muted); font-size: 12px; margin-bottom: 0; }
+.company-lead { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; margin-top: 18px; padding: 26px; border-radius: 18px; background: #211b3e; color: white; }
+.company-lead .eyebrow { color: #c4ee92; }
+.company-lead h3 { margin: 0 0 12px; font-size: 24px; letter-spacing: -.5px; }
+.company-lead p { margin: 0; color: #e0dced; font-size: 13px; line-height: 1.65; }
+.lead-evidence { border-left: 1px solid #514963; padding-left: 24px; }
+.lead-evidence > strong { display: block; margin-bottom: 8px; color: #c4ee92; font-size: 12px; }
+.lead-evidence small { display: block; margin-top: 12px; line-height: 1.7; color: #c6c0d8; }
+.company-lead.service-recovery { background: #4b321d; }
+.service-recovery .eyebrow, .service-recovery .lead-evidence > strong { color: #ffe2a9; }
+.company-recommendations { margin-top: 18px; }
+.recommendation-list { display: grid; gap: 12px; }
+.recommendation-card { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 14px; }
+.top-recommendation { border-color: #baa9ee; background: #faf8ff; }
+.recommendation-rank { display: grid; place-items: center; align-self: start; width: 38px; height: 38px; border-radius: 10px; background: var(--violet-soft); color: var(--violet-dark); font-size: 16px; font-weight: 800; }
+.recommendation-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.recommendation-heading h3 { font-size: 20px; }
+.recommendation-priority { color: #583a91; font-size: 11px; font-weight: 750; background: #eee8fc; border-radius: 99px; padding: 6px 10px; }
+.recommendation-copy p { font-size: 12px; line-height: 1.65; margin: 10px 0 0; color: #555a70; }
+.recommendation-copy .recommendation-pitch { color: var(--ink); font-size: 14px; font-weight: 600; }
+.recommendation-copy .recommendation-gap { color: #68617f; font-size: 11px; }
+.recommendation-support { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.recommendation-support summary { cursor: pointer; color: var(--violet-dark); font-size: 11px; font-weight: 750; }
+.company-evidence .account-questions { padding-left: 18px; margin-bottom: 0; font-size: 13px; line-height: 1.7; }
+.account-questions li + li { margin-top: 8px; }
+.company-boundary { color: var(--muted); font-size: 11px; line-height: 1.6; margin: 18px 4px 0; }
+@media (max-width: 760px) { .company-lead { grid-template-columns: 1fr; gap: 20px; padding: 22px; } .lead-evidence { border-left: 0; border-top: 1px solid #514963; padding: 18px 0 0; } .company-header { flex-wrap: wrap; } .recommendation-card { grid-template-columns: 1fr; padding: 16px; gap: 12px; } }
 .product-stack { display: grid; gap: 10px; margin-top: 20px; }
 .product-stack > div { border-bottom: 1px solid var(--line); padding-bottom: 10px; }
 .product-stack strong { font-size: 13px; }
@@ -306,7 +332,7 @@ td:first-child { text-align: left; position: sticky; left: 0; background: white;
         </article>
       </section>
 
-      <section id="company-view" class="view"><article class="panel company-selector"><label>Merchant<select id="company-filter"></select></label><p class="subtext">Profiles remain available for every merchant. Candidate status follows the current source and portfolio-display filters.</p></article><div id="company-content"></div></section>
+      <section id="company-view" class="view"><article class="panel company-selector"><label>Merchant<select id="company-filter"></select></label><p class="subtext">Recommendations use this merchant's holdings and signals, plus the selected source and threshold. Portfolio display filters do not hide recommendations in a company profile.</p></article><div id="company-content"></div></section>
 
       <section id="opportunities-view" class="view">
         <div class="opportunity-layout">
@@ -327,9 +353,9 @@ td:first-child { text-align: left; position: sticky; left: 0; background: white;
           <article class="panel method-card"><span>01</span><h3>Find the pattern</h3><p>Calculate how often a target family is held by merchants already using a source family.</p></article>
           <article class="panel method-card"><span>02</span><h3>Apply the threshold</h3><p>Only associations at or above the selected threshold create candidate alerts.</p></article>
           <article class="panel method-card"><span>03</span><h3>Check the gap</h3><p>The merchant must hold source A and lack target B. These are cross-family candidates, not validated recommendations.</p></article>
-          <article class="panel method-card"><span>04</span><h3>Prioritise action</h3><p>Country coverage, call sentiment and market signals guide outreach. Negative sentiment prompts service recovery first.</p></article>
+          <article class="panel method-card"><span>04</span><h3>Prioritise action</h3><p>Rank product recommendations by demo priority. Calls describing expansion prompt a next-market rollout discussion. Negative sentiment puts service recovery first.</p></article>
         </div>
-        <article class="panel method-notes"><h3>What is real—and what is illustrative?</h3><p>Representative capabilities are based on Nuvei’s public catalogue. The six family groupings, merchant holdings, countries, call excerpts, market events and priority weights are proposed demo choices—not Nuvei’s approved taxonomy or live data.</p><p>Association uses the full 17-merchant demo portfolio; display filters do not change the comparison base. The inclusive ≥ threshold and minimum base of 5 merchants are illustrative policies. Product suitability, permissions and local availability must be confirmed before outreach.</p><p>Priority = association + 9 for multi-country + 5 for positive sentiment (−5 for negative) + 5 for expansion/growth, capped at 99. It is a transparent sorting aid, not a probability or validated sales model.</p><a href="https://www.nuvei.com/partner-products-solutions" target="_blank" rel="noopener noreferrer">Nuvei capability reference ↗</a></article>
+        <article class="panel method-notes"><h3>What is real—and what is illustrative?</h3><p>Representative capabilities are based on Nuvei’s public catalogue. The six family groupings, merchant holdings, countries, call excerpts, market events and priority weights are proposed demo choices—not Nuvei’s approved taxonomy or live data.</p><p>Association uses the full 17-merchant demo portfolio; display filters do not change the comparison base. The inclusive ≥ threshold and minimum base of 5 merchants are illustrative policies. Product suitability, permissions and local availability must be confirmed before outreach.</p><p>Priority = association + 9 for multi-country + 5 for positive sentiment (−5 for negative) + 5 for expansion/growth, capped at 99. It is a transparent sorting aid, not a probability or validated sales model.</p><p>Company profiles rank missing products by this score, with family name used for ties. A nonnegative expansion call or expansion market signal leads with extending existing services into new markets; target countries remain to be confirmed. Negative sentiment leads with service recovery. Company recommendations use the selected source and threshold independently of portfolio display filters.</p><a href="https://www.nuvei.com/partner-products-solutions" target="_blank" rel="noopener noreferrer">Nuvei capability reference ↗</a></article>
         <article class="disclaimer"><strong>Demo boundary</strong><p>All merchants and signals are synthetic. No live calls, news feeds, AI agent, CRM writes or revenue forecasts. A missing family signals a conversation to validate—not proof of demand.</p></article>
       </section>
     </main>
@@ -394,20 +420,38 @@ function association(productId, sourceId=state.source){
 function readiness(m){ return m.sentiment==="Negative"?"Resolve concerns first":m.sentiment==="Positive"&&(m.market==="Growing"||m.market==="Expansion")?"Prioritise conversation":"Validate interest"; }
 function callExcerpt(m){ return m.sentiment==="Negative"?"Settlement reporting remains a concern. We need this resolved before discussing additional products.":m.multi?"We are expanding across markets and want fewer manual steps in our payment operations.":"We are reviewing our payment setup. Show us the operational benefit before we add another service."; }
 function marketExcerpt(m){ return m.market==="Expansion"?`Illustrative expansion into ${m.countries.slice(1).join(" and ") || "a new market"}.`:m.market==="Growing"?"Illustrative growth in transaction volumes and payment complexity.":m.market==="Launch"?"Illustrative new service launch with a payment-workflow review.":"No specific expansion event in this synthetic snapshot."; }
-function action(o){ const m=o.merchant; return m.sentiment==="Negative"?`Resolve the recorded service concern first. Then validate whether ${o.product.name} addresses an agreed need.`:`Validate ${o.product.name} fit across ${m.countries.join(", ")}. Use the call and market evidence to shape a discovery conversation; confirm local availability before proposing a solution.`; }
+const productPitches = {
+  acceptance:"Discuss payment collection for the merchant's next stage of growth.",
+  payouts:"Pitch Payouts to simplify outbound payments; ask who they need to pay and in which markets.",
+  risk:"Pitch Fraud & Risk to protect transactions as payment activity grows; ask about fraud and chargeback pain points.",
+  issuing:"Explore Card Issuing for their payment workflow; ask whether physical or virtual cards address a business need.",
+  recon:"Pitch Reconciliation to reduce manual payment reporting; ask which matching and settlement tasks take the most effort.",
+  orchestration:"Pitch Payment Orchestration to simplify a multi-provider payment setup; ask about routing and provider-management needs."
+};
+function expansionSignal(m){ return m.sentiment!=="Negative" && (m.multi || m.market==="Expansion"); }
+function accountSignal(m){
+  if(m.sentiment==="Negative") return "The call raises a service concern. Resolve it before starting an expansion conversation.";
+  if(expansionSignal(m)) return "The call describes expansion across markets and a need for fewer manual payment steps.";
+  if(m.market==="Growing") return "The market signal suggests growing transaction volumes and payment complexity.";
+  if(m.market==="Launch") return "The market signal suggests a new service launch and payment-workflow review.";
+  return "The call asks for a clear operational benefit before adding a service.";
+}
+function expansionAction(m){ return `Propose extending the merchant's existing Payment Acceptance service into its next markets. Confirm target countries and rollout requirements with the customer, then check product availability and commercial terms.`; }
+function action(o){ const m=o.merchant; return m.sentiment==="Negative"?`Resolve the recorded service concern first. Then discuss ${o.product.name} against an agreed need.`:`${productPitches[o.product.id]}${expansionSignal(m)?" Include the next-market rollout in the conversation.":""} Confirm requirements and local product availability before a proposal.`; }
+
+function merchantOpportunities(m){
+  if(!m.holdings.includes(state.source)) return [];
+  return products.filter(p=>p.id!==state.source && !m.holdings.includes(p.id)).flatMap(p=>{
+    const a=association(p.id);
+    if(a.denominator<minBase || a.rate<state.threshold) return [];
+    const priority=Math.min(99,Math.round(a.rate+(m.multi?9:0)+(m.sentiment==="Positive"?5:m.sentiment==="Negative"?-5:0)+(m.market==="Growing"||m.market==="Expansion"?5:0)));
+    return [{merchant:m,product:p,...a,priority}];
+  }).sort((a,b)=>b.priority-a.priority || a.product.name.localeCompare(b.product.name));
+}
 
 function opportunities(){
   const list=[];
-  filteredMerchants().forEach(m=>{
-    if(!m.holdings.includes(state.source)) return;
-    products.filter(p=>p.id!==state.source && !m.holdings.includes(p.id)).forEach(p=>{
-      const a=association(p.id);
-      if(a.denominator>=minBase && a.rate >= state.threshold){
-        const priority=Math.min(99,Math.round(a.rate+(m.multi?9:0)+(m.sentiment==="Positive"?5:m.sentiment==="Negative"?-5:0)+(m.market==="Growing"||m.market==="Expansion"?5:0)));
-        list.push({merchant:m,product:p,...a,priority});
-      }
-    });
-  });
+  filteredMerchants().forEach(m=>list.push(...merchantOpportunities(m)));
   return list.sort((a,b)=>(a.merchant.sentiment==="Negative")-(b.merchant.sentiment==="Negative") || b.priority-a.priority || a.merchant.name.localeCompare(b.merchant.name));
 }
 
@@ -473,10 +517,38 @@ function renderDetail(o){
 }
 
 function openCompany(id){state.company=id;document.querySelector("#company-filter").value=id;setView("company");}
+function recommendationReason(o){
+  const m=o.merchant;
+  if(m.sentiment==="Negative") return "Revisit this product after the settlement-reporting concern is resolved.";
+  if(expansionSignal(m)){
+    if(o.product.id==="recon") return "Their request for fewer manual payment steps makes reconciliation a focused discussion.";
+    if(o.product.id==="orchestration") return "Their expansion and operational-simplicity goals make payment-provider coordination worth discussing.";
+    if(o.product.id==="payouts") return "Use the expansion discussion to identify outbound payment needs in the next markets.";
+    if(o.product.id==="risk") return "Include fraud and chargeback controls in the discussion about payments in new markets.";
+    return "Discuss whether this capability supports the merchant's expansion workflow.";
+  }
+  return m.market==="Growing"?"Use the growth signal to discuss the operational benefit of this capability.":"Lead with the operational benefit and establish the customer's use case.";
+}
 function renderCompany(){
-  const m=merchants.find(x=>x.id===state.company), gaps=opportunities().filter(o=>o.merchant.id===m.id);
-  const direct=products.filter(p=>!m.holdings.includes(p.id));
-  document.querySelector("#company-content").innerHTML=`<article class="panel company-header"><div><p class="eyebrow">SYNTHETIC MERCHANT PROFILE</p><h2>${m.name}</h2><p>${m.vertical} · ${m.region} · ${m.countries.join(" / ")}</p></div><span class="count-badge">${readiness(m)}</span></article><div class="content-grid"><article class="panel"><p class="eyebrow">WHAT THEY HOLD</p><h3>Payment stack</h3><div class="product-stack">${m.holdings.map(id=>`<div><strong>✓ ${productById(id).name}</strong><p>${capabilities[id].join(" · ")}</p></div>`).join("")}</div><p class="subtext">Capabilities are representative family examples; not verified individual product holdings.</p></article><article class="panel"><p class="eyebrow">WHERE TO EXPLORE</p><h3>Cross-family gaps</h3><div class="product-stack">${direct.map(p=>{const o=gaps.find(x=>x.product.id===p.id);return `<div><strong>${p.name}</strong><p>${o?`${rateText(o.rate)} association · candidate for review`:`Not a candidate under current source/filter/base/threshold rules`}</p></div>`;}).join("")}</div><p class="subtext">Missing ≠ suitable. Validate merchant needs and country availability.</p></article><article class="panel evidence-card"><p class="eyebrow">CALL EVIDENCE · SIMULATED</p><h3>${m.sentiment} relationship sentiment</h3><blockquote>${callExcerpt(m)}</blockquote><p class="subtext">${m.callId} · synthetic call excerpt · 10 Oct 2026</p><p>Why it matters: ${m.sentiment==="Negative"?"service recovery should precede expansion outreach.":"use the expressed need to test relevance, not to assume buying intent."}</p></article><article class="panel evidence-card"><p class="eyebrow">MARKET EVIDENCE · SIMULATED</p><h3>${m.market}</h3><blockquote>${marketExcerpt(m)}</blockquote><p class="subtext">${m.marketId} · synthetic market event · 12 Oct 2026</p><p>Why it matters: ${m.multi?"a multi-country footprint can increase operational complexity.":"a single-country account may still have a relevant product gap."}</p></article></div>`;
+  const m=merchants.find(x=>x.id===state.company), gaps=merchantOpportunities(m);
+  const negative=m.sentiment==="Negative", expansion=expansionSignal(m);
+  const leadTitle=negative?"Resolve the settlement-reporting concern":expansion?"Expand existing services into new markets":gaps.length?`Lead with ${gaps[0].product.name}`:"Establish the next payment need";
+  const leadAction=negative?"Set up a service-recovery conversation and agree a resolution plan. Reopen cross-sell discussions after the customer is satisfied.":expansion?expansionAction(m):gaps.length?action(gaps[0]):"Discuss the customer's next operational goal and use the held families below to choose a relevant comparison.";
+  const noGaps=m.holdings.includes(state.source)?`No missing product family meets the ${state.threshold}% threshold and minimum base of ${minBase} for ${productById(state.source).name}.`:`This merchant does not hold the selected source, ${productById(state.source).name}. Select a held family below to compare relevant product gaps.`;
+  document.querySelector("#company-content").innerHTML=`
+    <article class="panel company-header"><div><p class="eyebrow">SYNTHETIC MERCHANT PROFILE</p><h2>${m.name}</h2><p>${m.vertical} · ${m.region} · ${m.countries.join(" / ")}</p></div><button class="text-btn download-company-plan">Download account plan ↓</button></article>
+    <article class="company-lead ${negative?'service-recovery':''}"><div><p class="eyebrow">${negative?'SERVICE RECOVERY FIRST':'LEAD ACCOUNT ACTION'}</p><h3>${leadTitle}</h3><p>${leadAction}</p></div><div class="lead-evidence"><strong>Why now</strong><p>${accountSignal(m)}</p>${expansion?`<small>Current footprint: ${m.countries.join(", ")}<br>Next markets: confirm with customer</small>`:`<small>${m.sentiment} call sentiment · ${m.market} market context</small>`}</div></article>
+    <article class="panel company-recommendations"><div class="panel-head"><div><p class="eyebrow">${negative?'AFTER SERVICE RECOVERY':'WHAT TO SELL NEXT'}</p><h3>Ranked cross-sell recommendations</h3><p class="subtext">${gaps.length?`${gaps.length} product recommendations · strongest first · source: ${productById(state.source).name}`:'Choose a relevant source family or adjust the threshold to explore further.'}</p></div></div>
+      <div class="recommendation-list">${gaps.length?gaps.map((o,i)=>`<article class="recommendation-card ${i===0&&!negative?'top-recommendation':''}" data-recommendation="${o.product.id}"><span class="recommendation-rank">${String(i+1).padStart(2,"0")}</span><div class="recommendation-copy"><div class="recommendation-heading"><h3>${o.product.name}</h3><span class="recommendation-priority">${negative?'After recovery':i===0?'Top cross-sell':'Next cross-sell'} · ${o.priority} priority</span></div><p class="recommendation-pitch">${productPitches[o.product.id]}</p><p><strong>Why this account:</strong> ${recommendationReason(o)}</p><p class="recommendation-gap">Holds ${productById(state.source).name} · ${o.product.name} not held</p><details class="recommendation-support"><summary>Supporting evidence</summary><p><strong>Full-portfolio association:</strong> ${o.numerator} of ${o.denominator} merchants holding ${productById(state.source).name} also hold ${o.product.name} (${rateText(o.rate)}).</p><p><strong>Account signals:</strong> ${m.sentiment} call sentiment (${m.callId}) · ${m.market} market context (${m.marketId}) · ${m.countries.length} ${m.multi?'countries':'country'}.</p><p><strong>Priority:</strong> ${o.priority} / 99, using the demo weights explained in Method.</p></details></div></article>`).join(""):`<div class="empty">${noGaps}</div>`}</div>
+    </article>
+    <div class="content-grid company-evidence"><article class="panel"><p class="eyebrow">WHAT THEY HOLD</p><h3>Payment stack</h3><div class="product-stack">${m.holdings.map(id=>`<div><button class="text-btn" data-account-source="${id}">✓ ${productById(id).name}${id===state.source?' · Selected source':''}</button><p>${capabilities[id].join(" · ")}</p></div>`).join("")}</div><p class="subtext">Select a held family to use it as the comparison source.</p></article><article class="panel evidence-card"><p class="eyebrow">CALL EVIDENCE · SIMULATED</p><h3>${m.sentiment} relationship sentiment</h3><blockquote>${callExcerpt(m)}</blockquote><p class="subtext">${m.callId} · synthetic call excerpt · 10 Oct 2026</p><p>${accountSignal(m)}</p></article><article class="panel evidence-card"><p class="eyebrow">MARKET EVIDENCE · SIMULATED</p><h3>${m.market}</h3><blockquote>${marketExcerpt(m)}</blockquote><p class="subtext">${m.marketId} · synthetic market event · 12 Oct 2026</p><p>${expansion?'Use this context to scope a rollout into the next markets.':negative?'Resolve the relationship concern before using growth signals for outreach.':'Use this context to time the product conversation.'}</p></article><article class="panel"><p class="eyebrow">CONVERSATION PLAN</p><h3>Questions to move the sale forward</h3><ol class="account-questions">${negative?'<li>What needs to change to resolve the settlement-reporting concern?</li><li>Who owns the resolution and what outcome will satisfy the customer?</li>':`${expansion?'<li>Which markets are next, and what is the launch timeline?</li>':''}<li>Which payment tasks create the most manual work?</li><li>${gaps.length?`Where could ${gaps[0].product.name} deliver the most value?`:'What payment capability is the business missing?'}</li><li>What requirements and commercial terms should the proposal cover?</li>`}</ol></article></div>
+    <p class="company-boundary">Illustrative sales recommendations using synthetic evidence. Confirm customer requirements, target markets and local product availability during discovery.</p>`;
+  document.querySelector(".download-company-plan").onclick=()=>downloadCompanyPlan(m,gaps,leadTitle,leadAction);
+  document.querySelector("#company-content").querySelectorAll("[data-account-source]").forEach(el=>el.onclick=()=>{state.source=el.dataset.accountSource;state.selected=null;document.querySelector("#source-filter").value=state.source;renderAll();});
+}
+function downloadCompanyPlan(m,gaps,leadTitle,leadAction){
+  const content=`NUVEI ACCOUNT PLAN — SYNTHETIC DEMO\n\n${m.name}\nCurrent footprint: ${m.countries.join(", ")}\n\nLEAD ACTION: ${leadTitle}\n${leadAction}\nWhy now: ${accountSignal(m)}\n${expansionSignal(m)?"Next markets: confirm with customer\n":""}\nRANKED CROSS-SELL RECOMMENDATIONS\n${gaps.length?gaps.map((o,i)=>`${i+1}. ${o.product.name} — priority ${o.priority}/99\n${productPitches[o.product.id]}\nWhy this account: ${recommendationReason(o)}\nProduct gap: ${productById(state.source).name} held; ${o.product.name} not held\nFull-portfolio support: ${o.numerator}/${o.denominator} = ${rateText(o.rate)}\n`).join("\n"):"No product recommendations meet the current source and threshold rules.\n"}\nCALL ${m.callId}: ${callExcerpt(m)}\nMARKET ${m.marketId}: ${marketExcerpt(m)}\n\nConfirm needs, target markets and local availability. This is a local download; no CRM record or message has been created.\n`;
+  const url=URL.createObjectURL(new Blob([content],{type:"text/plain;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download=`${m.name.replaceAll(" ","_")}_Account_Plan.txt`;a.click();URL.revokeObjectURL(url);showToast("Account plan downloaded");
 }
 function downloadBrief(o){
   const m=o.merchant, content=`CONCEPT DEMO — SYNTHETIC DATA\n\n${m.name}\nSource: ${productById(state.source).name}\nCandidate: ${o.product.name}\nAssociation: ${o.numerator}/${o.denominator} = ${rateText(o.rate)} against ${state.threshold}%\nCountries: ${m.countries.join(", ")}\nCall ${m.callId}: ${callExcerpt(m)}\nMarket ${m.marketId}: ${marketExcerpt(m)}\nNext action: ${action(o)}\n\nHuman review required. No CRM record has been created.\n`;
