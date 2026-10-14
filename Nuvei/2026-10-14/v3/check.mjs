@@ -34,6 +34,13 @@ run('resetDemo(false)');
 const cross40=run("recommendations('crosssell').length"),up40=run("recommendations('upsell').length");
 run('state.upThreshold=90;');assert.equal(run("recommendations('crosssell').length"),cross40,'Upsell slider does not alter cross-sell');
 run('resetDemo(false);state.crossThreshold=90;');assert.equal(run("recommendations('upsell').length"),up40,'Cross-sell slider does not alter upsell');
+run('resetDemo(false)');
+// Score explanation must match the number actually used to rank recommendations.
+assert.equal(run("priority({...merchants[0],multi:true,sentiment:'Positive',market:'Growing'},95)"),99);
+assert.equal(run("priority({...merchants[0],multi:false,sentiment:'Negative',market:'Stable'},40)"),35);
+assert.ok(run("[...recommendations('crosssell'),...recommendations('upsell')].every(o=>priority(o.merchant,o.rate)===o.priority&&scoreText(o).includes(`${o.priority}/99`))"));
+assert.ok(run("recommendations('crosssell').every((o,i,a)=>o.merchant.sentiment!=='Negative'||a.slice(i).every(x=>x.merchant.sentiment==='Negative'))"));
+run("setView('crosssell')");assert.match(node('#cross-detail').innerHTML,/Why this ranks here/);assert.match(node('#cross-detail').innerHTML,/90 \/ 99/);assert.match(node('#cross-detail').innerHTML,/Purchasing pattern/);
 let scenarios=0;
 for(const source of run('families.map(f=>f.id)'))for(const crossThreshold of [10,40,42,60,90])for(const upThreshold of [10,40,60,61,90])for(const region of ['All','Europe','North America','APAC'])for(const multi of [false,true]){
  context.params={source,crossThreshold,upThreshold,region,multi};
@@ -48,7 +55,7 @@ for(const source of run('families.map(f=>f.id)'))for(const crossThreshold of [10
 }
 run('resetDemo(false)');
 for(const view of run('Object.keys(titles)'))run(`setView('${view}')`);
-for(let i=0;i<5;i++)run(`runStory(${i})`);
+run("state.company='m11';renderCompany();");
 assert.match(node('#company-content').innerHTML,/SERVICE RECOVERY FIRST/);
 run("resetDemo(false);state.company='m1';renderCompany();");
 assert.match(node('#company-content').innerHTML,/Add Real-time payouts within Payouts/);
