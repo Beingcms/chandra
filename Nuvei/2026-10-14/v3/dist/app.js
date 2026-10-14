@@ -59,7 +59,7 @@ const merchants = rawMerchants.map((m,i)=>{
     nextMarkets:m[5]==='Expansion'?nextMarketGroups[m[2]]:[],callId:`CALL-${String(i+1).padStart(3,'0')}`,marketId:`MKT-${String(i+1).padStart(3,'0')}`};
 });
 const minBase=5;
-const state={view:'overview',source:'acceptance',crossThreshold:40,upThreshold:40,region:'All',vertical:'All',multi:false,company:'m1',selectedCross:null,selectedUp:null,question:null};
+const state={view:'overview',source:'acceptance',crossThreshold:40,upThreshold:40,region:'All',vertical:'All',multi:false,company:'m1',selectedCross:null,selectedUp:null};
 const titles={overview:'Whitespace overview',matrix:'Cross-holding intelligence',crosssell:'Cross-sell recommendations',upsell:'Upsell recommendations',company:'Company detail',walkthrough:'The demo story',method:'How recommendations work'};
 const familyById=id=>families.find(f=>f.id===id);
 const productById=id=>catalogue.find(p=>p.id===id);
@@ -206,7 +206,6 @@ function openCompany(id){state.company=id;$('#company-filter').value=id;setView(
 function openRecommendation(o){state[o.kind==='crosssell'?'selectedCross':'selectedUp']=o.key;setView(o.kind);}
 function changeSource(id){state.source=id;state.selectedCross=null;state.selectedUp=null;$('#source-filter').value=id;renderAll();}
 function setView(view){state.view=view;document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id===`${view}-view`));document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===view);el.setAttribute('aria-current',el.dataset.view===view?'page':'false');});$('#page-title').textContent=titles[view];renderAll();window.scrollTo({top:0,behavior:'instant'});}
-function answerQuestion(q){state.question=q;const list=sortRecommendations([...recommendations('crosssell'),...recommendations('upsell')]);if(q==='threshold')$('#ask-answer').textContent=`The rate describes existing joint holdings, not buying probability. Cross-sell minimum: ${state.crossThreshold}%; upsell minimum: ${state.upThreshold}%. Exact equality passes; source base must be at least ${minBase}. Lower thresholds admit weaker associations.`;else{const result=q==='upsell'?list.filter(o=>o.kind==='upsell'):list.filter(o=>o.merchant.multi);$('#ask-answer').textContent=result.length?result.slice(0,3).map(o=>`${o.merchant.name}: ${o.target.name} (${kindLabel(o)}, ${rateText(o.rate)} attach)`).join('; '):'No recommendations meet this question’s criteria under the current comparison and filters.';}}
 const storySteps=[
   {title:'01 Start with the portfolio',say:'We know what merchants already buy. Whitespace means the next relevant capability: a missing family or a missing product within an existing family.',button:'Open overview',setup:'overview'},
   {title:'02 Explain one cross-sell pattern',say:'Seven of seventeen Acceptance merchants also hold Fraud & Risk: 41.2%. At a 40% minimum, Acceptance merchants missing Risk get a recommendation. At 42%, that pairing stops qualifying.',button:'Show the 7-of-17 example',setup:'matrix'},
@@ -215,19 +214,16 @@ const storySteps=[
   {title:'05 Handle concerns before selling',say:'Pinecone has negative relationship sentiment. It stays visible, but its lead action is service recovery. Product recommendations are saved for after that concern is resolved.',button:'Open recovery example',setup:'recovery'}
 ];
 function renderStory(){
-  $('#story-cards').innerHTML=storySteps.map((s,i)=>`<article class="panel story-card"><p class="eyebrow">WHAT TO SAY</p><h3>${s.title}</h3><p>${s.say}</p><button class="primary-btn purple" data-story="${i}">${s.button} →</button></article>`).join('');
+  $('#story-cards').innerHTML=storySteps.map((s,i)=>`<article class="panel story-card"><h3>${s.title}</h3><p>${s.say}</p><button class="primary-btn purple" data-story="${i}">${s.button} →</button></article>`).join('');
   $('#story-cards').querySelectorAll('[data-story]').forEach(el=>el.onclick=()=>runStory(+el.dataset.story));
 }
 function runStory(index){resetDemo(false);const setup=storySteps[index].setup;if(setup==='upsell'){state.source='payouts';$('#source-filter').value='payouts';state.selectedUp=upCandidates(merchants[0],['payouts'])[0]?.key||null;setView('upsell');}else if(setup==='recovery'){openCompany('m11');}else if(setup==='company'){openCompany('m1');}else setView(setup);}
-function resetDemo(toast=true){Object.assign(state,{view:'overview',source:'acceptance',crossThreshold:40,upThreshold:40,region:'All',vertical:'All',multi:false,company:'m1',selectedCross:null,selectedUp:null,question:null});$('#source-filter').value='acceptance';$('#cross-threshold').value=40;$('#up-threshold').value=40;$('#company-filter').value='m1';$('#region-filter').value='All';$('#vertical-filter').value='All';$('#multi-filter').checked=false;$('#ask-answer').textContent='Answers use current filters and synthetic evidence.';setView('overview');if(toast)showToast('Demo reset · both thresholds 40%');}
+function resetDemo(toast=true){Object.assign(state,{view:'overview',source:'acceptance',crossThreshold:40,upThreshold:40,region:'All',vertical:'All',multi:false,company:'m1',selectedCross:null,selectedUp:null});$('#source-filter').value='acceptance';$('#cross-threshold').value=40;$('#up-threshold').value=40;$('#company-filter').value='m1';$('#region-filter').value='All';$('#vertical-filter').value='All';$('#multi-filter').checked=false;setView('overview');if(toast)showToast('Demo reset · both thresholds 40%');}
 function renderAll(){
   $('#cross-label').textContent=`${state.crossThreshold}%`;$('#up-label').textContent=`${state.upThreshold}%`;
-  const target=state.source==='risk'?'recon':'risk',a=attachRate(state.source,target),pass=a.denominator>=minBase&&a.rate>=state.crossThreshold;
-  $('#hero-rate').textContent=rateText(a.rate);$('#hero-base').textContent=`${a.numerator} of ${a.denominator}`;$('#hero-pair').textContent=`${familyById(state.source).name} → ${familyById(target).name}`;
-  $('#hero-svg').setAttribute('aria-label',`${rateText(a.rate)} attach rate`);$('#hero-ring').style.strokeDashoffset=307.9*(1-a.rate/100);
-  $('#hero-status').textContent=pass?'RULE MET':'BELOW MINIMUM';$('#hero-status').style.color=pass?'var(--lime)':'#ffb6b6';$('#hero-threshold-copy').textContent=`${pass?'Meets':'Does not meet'} ${state.crossThreshold}% minimum attach rate`;
-  $('#scope-note').textContent=`Portfolio: 20 synthetic merchants · comparison: ${familyById(state.source).name} · ${a.denominator} family holders · minimum source base ${minBase}. Both thresholds are illustrative. Filters narrow displayed accounts; attach rates use the full portfolio. Company detail compares all held families.`;
-  renderOverview();if(state.view==='matrix')renderMatrix();if(state.view==='crosssell'||state.view==='upsell')renderList(state.view);if(state.view==='company')renderCompany();if(state.question)answerQuestion(state.question);
+  const sourceCount=merchants.filter(m=>m.holdings.includes(state.source)).length;
+  $('#scope-note').textContent=`20 synthetic merchants · ${sourceCount} hold ${familyById(state.source).name}. Filters change displayed accounts; attach rates use the full portfolio. Minimum comparison base: ${minBase}. Thresholds are illustrative.`;
+  renderOverview();if(state.view==='matrix')renderMatrix();if(state.view==='crosssell'||state.view==='upsell')renderList(state.view);if(state.view==='company')renderCompany();
 }
 function showToast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
 populateFilters();renderStory();
@@ -237,5 +233,4 @@ $('#source-filter').onchange=e=>changeSource(e.target.value);
 for(const field of ['region','vertical'])$(`#${field}-filter`).onchange=e=>{state[field]=e.target.value;state.selectedCross=null;state.selectedUp=null;renderAll();};
 $('#multi-filter').onchange=e=>{state.multi=e.target.checked;state.selectedCross=null;state.selectedUp=null;renderAll();};
 $('#company-filter').onchange=e=>{state.company=e.target.value;renderCompany();};
-document.querySelectorAll('[data-question]').forEach(el=>el.onclick=()=>answerQuestion(el.dataset.question));
 $('#refresh-btn').onclick=()=>resetDemo();renderAll();
