@@ -60,7 +60,7 @@ const merchants = rawMerchants.map((m,i)=>{
 });
 const minBase=5;
 const state={view:'overview',source:'acceptance',crossThreshold:40,upThreshold:40,region:'All',vertical:'All',multi:false,company:'m1',selectedCross:null,selectedUp:null};
-const titles={overview:'Whitespace overview',matrix:'Cross-holding intelligence',crosssell:'Cross-sell recommendations',upsell:'Upsell recommendations',company:'Company detail',walkthrough:'The demo story',method:'How recommendations work'};
+const titles={overview:'Portfolio overview',matrix:'Family adoption',productmatrix:'Product adoption',crosssell:'Cross-sell opportunities',upsell:'Upsell opportunities',company:'Account 360',walkthrough:'Demo guide',method:'Recommendation rules'};
 const familyById=id=>families.find(f=>f.id===id);
 const productById=id=>catalogue.find(p=>p.id===id);
 const rateText=n=>`${n.toFixed(1)}%`;
@@ -174,7 +174,6 @@ function renderList(kind){
   $(`#${prefix}-list`).innerHTML=list.length?list.map(o=>`<button class="opp-row ${o.key===state[key]?'selected':''}" data-key="${o.key}"><div class="merchant-icon">${initials(o.merchant.name)}</div><div><h4>${o.merchant.name} → ${o.target.name}</h4><p>${isCross?'Missing family':`Within ${o.family.name}`} · already holds ${o.source.name}</p><div class="tags"><span class="tag hot">${rateText(o.rate)} attach rate</span><span class="tag">${o.merchant.countries.length} ${o.merchant.countries.length===1?'country':'countries'}</span><span class="tag">${readiness(o.merchant)}</span></div></div><div class="priority"><strong>${o.priority}</strong><span>Demo priority</span></div></button>`).join(''):`<div class="empty">No ${isCross?'cross-sell':'upsell'} recommendations meet the current rules. Change the comparison family, threshold or filters.</div>`;
   $(`#${prefix}-list`).querySelectorAll('[data-key]').forEach(el=>el.onclick=()=>{state[key]=el.dataset.key;renderList(kind);});
   renderDetail(list.find(o=>o.key===state[key]),prefix);
-  if(!isCross)renderProductMatrix();
 }
 function renderDetail(o,prefix){
   const panel=$(`#${prefix}-detail`);
@@ -207,10 +206,10 @@ function openRecommendation(o){state[o.kind==='crosssell'?'selectedCross':'selec
 function changeSource(id){state.source=id;state.selectedCross=null;state.selectedUp=null;$('#source-filter').value=id;renderAll();}
 function setView(view){state.view=view;document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id===`${view}-view`));document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===view);el.setAttribute('aria-current',el.dataset.view===view?'page':'false');});$('#page-title').textContent=titles[view];renderAll();window.scrollTo({top:0,behavior:'instant'});}
 const storySteps=[
-  {title:'01 Start with the portfolio',say:'We know what merchants already buy. Whitespace means the next relevant capability: a missing family or a missing product within an existing family.',button:'Open overview',setup:'overview'},
+  {title:'01 Start with the portfolio',say:'We know what merchants already buy. Whitespace means the next relevant capability: a missing family or a missing product within an existing family.',button:'Open portfolio overview',setup:'overview'},
   {title:'02 Explain one cross-sell pattern',say:'Seven of seventeen Acceptance merchants also hold Fraud & Risk: 41.2%. At a 40% minimum, Acceptance merchants missing Risk get a recommendation. At 42%, that pairing stops qualifying.',button:'Show the 7-of-17 example',setup:'matrix'},
-  {title:'03 Show the missing upsell',say:'Northstar already buys Payouts but lacks Real-time payouts. Six of ten Payouts holders also have Real-time payouts: 60%. This supports adding a product inside the same family.',button:'Open Payouts upsell',setup:'upsell'},
-  {title:'04 Turn signals into an account action',say:'Open Northstar. We lead with the next product, show the existing holding and evidence, and discuss a possible rollout into Spain and Italy. These are synthetic planning signals; availability remains to be checked.',button:'Open Northstar’s plan',setup:'company'},
+  {title:'03 Show the missing upsell',say:'Northstar already buys Payouts but lacks Real-time payouts. Six of ten Payouts holders also have Real-time payouts: 60%. This supports adding a product inside the same family.',button:'Open Payouts opportunities',setup:'upsell'},
+  {title:'04 Turn signals into an account action',say:'Open Northstar. We lead with the next product, show the existing holding and evidence, and discuss a possible rollout into Spain and Italy. These are synthetic planning signals; availability remains to be checked.',button:'Open Northstar’s Account 360',setup:'company'},
   {title:'05 Handle concerns before selling',say:'Pinecone has negative relationship sentiment. It stays visible, but its lead action is service recovery. Product recommendations are saved for after that concern is resolved.',button:'Open recovery example',setup:'recovery'}
 ];
 function renderStory(){
@@ -223,7 +222,7 @@ function renderAll(){
   $('#cross-label').textContent=`${state.crossThreshold}%`;$('#up-label').textContent=`${state.upThreshold}%`;
   const sourceCount=merchants.filter(m=>m.holdings.includes(state.source)).length;
   $('#scope-note').textContent=`20 synthetic merchants · ${sourceCount} hold ${familyById(state.source).name}. Filters change displayed accounts; attach rates use the full portfolio. Minimum comparison base: ${minBase}. Thresholds are illustrative.`;
-  renderOverview();if(state.view==='matrix')renderMatrix();if(state.view==='crosssell'||state.view==='upsell')renderList(state.view);if(state.view==='company')renderCompany();
+  renderOverview();if(state.view==='matrix')renderMatrix();if(state.view==='productmatrix')renderProductMatrix();if(state.view==='crosssell'||state.view==='upsell')renderList(state.view);if(state.view==='company')renderCompany();
 }
 function showToast(message){const t=$('#toast');t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
 populateFilters();renderStory();
