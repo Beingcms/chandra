@@ -211,3 +211,7 @@ td:first-child { text-align: left; position: sticky; left: 0; background: white;
 
 .walkthrough-files { display:flex; flex-wrap:wrap; gap:18px; margin-top:20px; }
 .walkthrough-files a { color:var(--violet-dark); font-size:13px; font-weight:650; }
+
+.text-btn { white-space: nowrap; }
+@media(max-width:760px) { .sidebar nav { overflow-x:auto; min-width:0; } .nav-item { flex:0 0 auto; } }
+.panel-head { flex-wrap: wrap; }
