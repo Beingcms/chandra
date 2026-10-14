@@ -30,6 +30,17 @@ button.alert-row, button.opp-row { width: 100%; text-align: left; background: wh
 .association-panel { margin-bottom: 20px; }
 .selected-source td, .selected-source td:first-child { background: #f5f2ff; }
 .meets-threshold { color: #5b32cd; }
+.association-guide { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; margin-bottom: 18px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #fafaff; }
+.association-guide p { margin: 0; font-size: 12px; line-height: 1.6; color: #555a70; }
+.association-guide strong { color: var(--ink); }
+.association-example { grid-column: 1 / -1; }
+#association-table thead th small { display: inline-block; margin-bottom: 5px; font-size: 9px; font-weight: 500; text-transform: none; letter-spacing: 0; }
+#association-table tbody th { position: sticky; left: 0; top: auto; z-index: 1; min-width: 180px; background: white; text-align: left; border-bottom: 1px solid #f0f1f5; text-transform: none; letter-spacing: 0; }
+#association-table tbody th small { display: inline-block; margin-top: 4px; font-weight: 500; }
+#association-table .selected-source th { background: #f5f2ff; }
+#association-table td.association-self { background: #f1f2f5; color: #555a70; }
+#association-table td small { display: inline-block; margin-top: 4px; }
+@media (max-width: 760px) { .association-guide { grid-template-columns: 1fr; } }
 .company-selector { padding: 14px 22px; margin-bottom: 18px; }
 .company-selector label { font-size: 11px; color: var(--muted); }
 .company-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
@@ -280,7 +291,15 @@ td:first-child { text-align: left; position: sticky; left: 0; background: white;
       </section>
 
       <section id="matrix-view" class="view">
-        <article class="panel association-panel"><div class="panel-head"><div><p class="eyebrow">FAMILY × FAMILY</p><h3>Cross-holding associations</h3><p class="subtext">Read across each row: of merchants holding A, how many also hold B? Select a source row.</p></div></div><div class="table-wrap"><table id="association-table"><thead></thead><tbody></tbody></table></div></article>
+        <article class="panel association-panel">
+          <div class="panel-head"><div><p class="eyebrow">PRODUCT FAMILY × PRODUCT FAMILY</p><h3>Cross-holding associations</h3><p class="subtext" id="association-reading">Read across a row: of merchants already holding family A, what percentage also hold column family B? Select a row to explore its candidate gaps.</p></div></div>
+          <div class="association-guide" id="association-guide">
+            <p><strong>Diagonal: same family.</strong> Always 100% for a nonempty row. These grey cells are excluded from cross-sell candidates.</p>
+            <p><strong>Other cells can also be 100%.</strong> This means every merchant holding row A also holds column B.</p>
+            <p class="association-example"><strong>Direction matters:</strong> Payment Acceptance → Fraud &amp; Risk is 7 / 17 = 41.2%. Fraud &amp; Risk → Payment Acceptance is 7 / 7 = 100%. The row determines the comparison base.</p>
+          </div>
+          <div class="table-wrap"><table id="association-table" aria-label="Percentage of merchants holding the row family who also hold the column family" aria-describedby="association-reading association-guide"><thead></thead><tbody></tbody></table></div>
+        </article>
         <article class="panel full-panel">
           <div class="panel-head"><div><p class="eyebrow">PRODUCT FOOTPRINT</p><h3>Merchant × product family</h3><p class="subtext">Select a merchant for company detail, or a candidate cell for evidence.</p></div><div class="legend"><span><i class="held"></i>Held</span><span><i class="qualified"></i>Candidate</span><span><i class="gap"></i>Other gap</span></div></div>
           <div class="table-wrap"><table id="matrix-table"><thead></thead><tbody></tbody></table></div>
@@ -417,8 +436,12 @@ function renderOverview(){
 function renderMatrix(){
   const ms=filteredMerchants(), table=document.querySelector("#matrix-table");
   const associations=document.querySelector("#association-table");
-  associations.tHead.innerHTML=`<tr><th>Source A → target B</th>${products.map(p=>`<th>${p.short}</th>`).join("")}</tr>`;
-  associations.tBodies[0].innerHTML=products.map(source=>`<tr class="${source.id===state.source?'selected-source':''}"><td><button class="text-btn" data-source="${source.id}">${source.name}</button><br><small>${merchants.filter(m=>m.holdings.includes(source.id)).length} source merchants</small></td>${products.map(target=>{const a=association(target.id,source.id);return `<td>${target.id===source.id?'—':`<strong class="${a.rate>=state.threshold&&a.denominator>=minBase?'meets-threshold':''}">${rateText(a.rate)}</strong><br><small>${a.numerator} / ${a.denominator}${a.denominator<minBase?' · small base':''}</small>`}</td>`;}).join("")}</tr>`).join("");
+  associations.tHead.innerHTML=`<tr><th scope="col">Already holds (row A)<br><small>Read across →</small></th>${products.map(p=>`<th scope="col"><small>Also holds (column B)</small><br>${p.short}</th>`).join("")}</tr>`;
+  associations.tBodies[0].innerHTML=products.map(source=>`<tr class="${source.id===state.source?'selected-source':''}"><th scope="row"><button class="text-btn" data-source="${source.id}">${source.name}</button><br><small>${merchants.filter(m=>m.holdings.includes(source.id)).length} merchants holding A</small></th>${products.map(target=>{
+    const a=association(target.id,source.id), self=target.id===source.id;
+    const explanation=self?`${source.name} compared with itself: all ${a.denominator} merchants already hold this family. Excluded from cross-sell candidates.`:`${a.numerator} of ${a.denominator} merchants holding ${source.name} also hold ${target.name}: ${rateText(a.rate)}.`;
+    return `<td data-source-family="${source.id}" data-target-family="${target.id}" class="${self?'association-self':''}" title="${explanation}"><strong class="${!self&&a.rate>=state.threshold&&a.denominator>=minBase?'meets-threshold':''}">${rateText(a.rate)}</strong><br><small>${a.numerator} / ${a.denominator}${self?' · Same family':a.denominator<minBase?' · small base':''}</small></td>`;
+  }).join("")}</tr>`).join("");
   associations.querySelectorAll("[data-source]").forEach(el=>el.onclick=()=>{state.source=el.dataset.source;state.selected=null;document.querySelector("#source-filter").value=state.source;renderAll();});
   table.tHead.innerHTML=`<tr><th>Merchant</th>${products.map(p=>`<th>${p.short}<br><small>${p.id===state.source?'Source':rateText(association(p.id).rate)}</small></th>`).join("")}</tr>`;
   table.tBodies[0].innerHTML=ms.map(m=>`<tr><td><button class="text-btn" data-company="${m.id}">${m.name}</button><br><small>${m.region} · ${m.countries.length} ${m.multi?'countries':'country'}</small></td>${products.map(p=>{
