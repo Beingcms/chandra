@@ -178,6 +178,28 @@ function renderProductMatrix(){
   table.tHead.innerHTML=`<tr><th>Already holds (product A)</th>${options.map(p=>`<th>Also holds (product B)<br>${p.name}</th>`).join('')}</tr>`;
   table.tBodies[0].innerHTML=options.map(p=>`<tr><th scope="row">${p.name}<br><small>${merchants.filter(m=>m.productHoldings.includes(p.id)).length} source merchants</small></th>${options.map(t=>matrixCell(p,t,'product',state.upThreshold)).join('')}</tr>`).join('');
 }
+function renderUpsellGrid(){
+  const family=familyById(state.source),options=catalogue.filter(p=>p.family===family.id),customers=filteredMerchants().filter(m=>m.holdings.includes(family.id)),table=$('#up-grid-table');
+  $('#up-grid-title').textContent=`What each ${family.name} customer buys`;
+  $('#up-grid-count').textContent=`${customers.length} ${customers.length===1?'customer':'customers'}`;
+  table.tHead.innerHTML=`<tr><th scope="col">Customer</th>${options.map(p=>`<th scope="col">${p.name}</th>`).join('')}</tr>`;
+  table.tBodies[0].innerHTML=customers.length?customers.map(m=>{
+    const additions=upCandidates(m,[family.id]);
+    return `<tr><td><button class="text-btn" data-up-customer="${m.id}">${m.name}</button></td>${options.map(p=>{
+      if(m.productHoldings.includes(p.id))return `<td><span class="matrix-cell held" title="${m.name} already buys ${p.name}">Held</span></td>`;
+      const o=additions.find(o=>o.target.id===p.id);
+      return o?`<td><button class="matrix-cell qualified ${o.key===state.selectedUp?'selected-gap':''}" data-up-gap="${o.key}" aria-label="Recommend ${p.name} for ${m.name}" aria-pressed="${o.key===state.selectedUp}" title="${rateText(o.rate)} attach rate · open upsell evidence">Add ↑</button></td>`:`<td><span class="matrix-cell gap" title="${p.name} is missing; the current upsell rule is not met">—</span></td>`;
+    }).join('')}</tr>`;
+  }).join(''):`<tr><td colspan="${options.length+1}" class="empty">No customers in the current filters buy ${family.name}.</td></tr>`;
+  table.querySelectorAll('[data-up-customer]').forEach(el=>el.onclick=()=>openCompany(el.dataset.upCustomer));
+  table.querySelectorAll('[data-up-gap]').forEach(el=>el.onclick=()=>openUpsellGap(el.dataset.upGap));
+}
+function openUpsellGap(key){
+  const o=recommendations('upsell').find(o=>o.key===key);
+  if(!o)return;
+  state.selectedUp=o.key;renderList('upsell');
+  const detail=$('#up-detail');detail.focus({preventScroll:true});detail.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function renderList(kind){
   const isCross=kind==='crosssell',prefix=isCross?'cross':'up',list=recommendations(kind),key=isCross?'selectedCross':'selectedUp';
   $(`#${prefix}-total`).textContent=`${list.length} recommendations`;
@@ -185,7 +207,7 @@ function renderList(kind){
   $(`#${prefix}-list`).innerHTML=list.length?list.map(o=>`<button class="opp-row ${o.key===state[key]?'selected':''}" data-key="${o.key}"><div class="merchant-icon">${initials(o.merchant.name)}</div><div><h4>${o.merchant.name} → ${o.target.name}</h4><p>${isCross?'Missing family':`Within ${o.family.name}`} · already holds ${o.source.name}</p><div class="tags"><span class="tag hot">${rateText(o.rate)} attach rate</span><span class="tag">${o.merchant.countries.length} ${o.merchant.countries.length===1?'country':'countries'}</span><span class="tag">${readiness(o.merchant)}</span></div></div><div class="priority"><strong>${o.priority}</strong><span>Demo priority</span></div></button>`).join(''):`<div class="empty">No ${isCross?'cross-sell':'upsell'} recommendations meet the current rules. Change the comparison family, threshold or filters.</div>`;
   $(`#${prefix}-list`).querySelectorAll('[data-key]').forEach(el=>el.onclick=()=>{state[key]=el.dataset.key;renderList(kind);});
   renderDetail(list.find(o=>o.key===state[key]),prefix);
-  if(!isCross)renderProductMatrix();
+  if(!isCross){renderProductMatrix();renderUpsellGrid();}
 }
 function renderDetail(o,prefix){
   const panel=$(`#${prefix}-detail`);
