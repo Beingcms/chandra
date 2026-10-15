@@ -214,3 +214,11 @@ td:first-child { text-align: left; position: sticky; left: 0; background: white;
 .score-breakdown .score-calculation { margin:12px 0; font-size:11px; line-height:1.6; color:var(--ink); }
 .score-breakdown .score-boundary { margin:0; font-size:10px; line-height:1.5; color:var(--muted); }
 .score-breakdown .score-recovery { margin:10px 0 0; color:#835216; font-size:11px; line-height:1.5; }
+
+.up-grid-panel { margin-bottom:20px; }
+.up-grid-scroll { max-height:360px; }
+#up-grid-table { min-width:580px; }
+#up-grid-table th:first-child, #up-grid-table td:first-child { width:34%; }
+.up-grid-panel .legend { flex-wrap:wrap; }
+.matrix-cell.qualified.selected-gap { outline:2px solid var(--violet); outline-offset:2px; }
+#up-detail { scroll-margin-top:20px; }

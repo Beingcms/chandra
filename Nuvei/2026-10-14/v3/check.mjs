@@ -5,7 +5,7 @@ const js=fs.readFileSync(new URL('dist/app.js',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('dist/index.html',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('dist/styles.css',import.meta.url),'utf8');
 const nodes=new Map();
-const node=key=>{if(!nodes.has(key))nodes.set(key,{textContent:'',innerHTML:'',value:'',checked:false,style:{},classList:{toggle(){},add(){},remove(){}},setAttribute(){},insertAdjacentHTML(){},querySelectorAll(){return[]},tHead:{innerHTML:''},tBodies:[{innerHTML:''}]});return nodes.get(key);};
+const node=key=>{if(!nodes.has(key))nodes.set(key,{textContent:'',innerHTML:'',value:'',checked:false,style:{},classList:{toggle(){},add(){},remove(){}},setAttribute(){},focus(){this.focused=true},scrollIntoView(){this.scrolled=true},insertAdjacentHTML(){},querySelectorAll(){return[]},tHead:{innerHTML:''},tBodies:[{innerHTML:''}]});return nodes.get(key);};
 let exportBlob;
 const context=vm.createContext({document:{querySelector:node,querySelectorAll(){return[]},createElement(){return{click(){}}}},window:{scrollTo(){}},setTimeout(){},Blob,URL:{createObjectURL(blob){exportBlob=blob;return'blob:demo'},revokeObjectURL(){}}});
 vm.runInContext(js,context);
@@ -41,6 +41,24 @@ assert.equal(run("priority({...merchants[0],multi:false,sentiment:'Negative',mar
 assert.ok(run("[...recommendations('crosssell'),...recommendations('upsell')].every(o=>priority(o.merchant,o.rate)===o.priority&&scoreText(o).includes(`${o.priority}/99`))"));
 assert.ok(run("recommendations('crosssell').every((o,i,a)=>o.merchant.sentiment!=='Negative'||a.slice(i).every(x=>x.merchant.sentiment==='Negative'))"));
 run("setView('crosssell')");assert.match(node('#cross-detail').innerHTML,/Why this ranks here/);assert.match(node('#cross-detail').innerHTML,/90 \/ 99/);assert.match(node('#cross-detail').innerHTML,/Purchasing pattern/);
+// Customer grid uses existing holdings and the same qualified recommendations as the list.
+run("resetDemo(false);state.source='payouts';setView('upsell');");
+const grid=()=>node('#up-grid-table').tBodies[0].innerHTML;
+assert.equal((grid().match(/data-up-customer=/g)||[]).length,10);
+assert.equal((grid().match(/data-up-gap=/g)||[]).length,4);
+assert.match(grid().split('</tr>').find(row=>row.includes('Northstar Travel')),/data-up-gap="m1:up:payoutsRealtime"/);
+assert.doesNotMatch(grid().split('</tr>').find(row=>row.includes('Atlas Market')),/data-up-gap=/);
+assert.doesNotMatch(grid(),/Pinecone Labs/,'Customers without this family are excluded');
+run("openUpsellGap('m1:up:payoutsRealtime')");
+assert.equal(run('state.selectedUp'),'m1:up:payoutsRealtime');
+assert.match(node('#up-detail').innerHTML,/Northstar Travel/);assert.match(node('#up-detail').innerHTML,/60.0% ≥ 40%/);
+assert.ok(node('#up-detail').focused&&node('#up-detail').scrolled,'Green cell opens and focuses evidence');
+run('state.upThreshold=61;renderAll()');assert.doesNotMatch(grid(),/data-up-gap=/);
+run("openUpsellGap('m1:up:payoutsRealtime')");assert.equal(run('state.selectedUp'),null,'A stale cell cannot open an unqualified gap');
+run("state.upThreshold=60;state.region='Europe';renderAll()");assert.equal((grid().match(/data-up-gap=/g)||[]).length,2);
+assert.equal(run("attachRate('payoutsCore','payoutsRealtime','product').denominator"),10,'Grid filters do not change attach base');
+run("state.region='APAC';state.vertical='SaaS';renderAll()");assert.match(grid(),/No customers in the current filters buy Payouts/);
+run('resetDemo(false)');
 let scenarios=0;
 for(const source of run('families.map(f=>f.id)'))for(const crossThreshold of [10,40,42,60,90])for(const upThreshold of [10,40,60,61,90])for(const region of ['All','Europe','North America','APAC'])for(const multi of [false,true]){
  context.params={source,crossThreshold,upThreshold,region,multi};

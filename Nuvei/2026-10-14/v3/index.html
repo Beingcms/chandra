@@ -216,6 +216,14 @@ td:first-child { text-align: left; position: sticky; left: 0; background: white;
 .score-breakdown .score-calculation { margin:12px 0; font-size:11px; line-height:1.6; color:var(--ink); }
 .score-breakdown .score-boundary { margin:0; font-size:10px; line-height:1.5; color:var(--muted); }
 .score-breakdown .score-recovery { margin:10px 0 0; color:#835216; font-size:11px; line-height:1.5; }
+
+.up-grid-panel { margin-bottom:20px; }
+.up-grid-scroll { max-height:360px; }
+#up-grid-table { min-width:580px; }
+#up-grid-table th:first-child, #up-grid-table td:first-child { width:34%; }
+.up-grid-panel .legend { flex-wrap:wrap; }
+.matrix-cell.qualified.selected-gap { outline:2px solid var(--violet); outline-offset:2px; }
+#up-detail { scroll-margin-top:20px; }
 </style></head>
 <body><div class="app-shell">
 <aside class="sidebar"><div class="brand"><div class="brand-mark">n</div><div><strong>nuvei</strong><span>Growth signals</span></div></div>
@@ -242,7 +250,7 @@ td:first-child { text-align: left; position: sticky; left: 0; background: white;
 <section id="matrix-view" class="view"><article class="panel association-panel"><div class="panel-head"><div><p class="eyebrow">FAMILY × FAMILY</p><h3>Which families do customers buy together?</h3><p class="subtext" id="association-reading">Read across: among merchants holding row family A, what percentage also hold column family B? Select a row to change the comparison.</p></div></div><div class="association-guide"><p><strong>Same-family diagonal:</strong> 100% when the base is nonempty; excluded from cross-sell.</p><p><strong>Direction matters:</strong> the row determines the denominator. Off-diagonal 100% can be valid.</p><p class="association-example" id="association-example"></p></div><div class="table-wrap"><table id="association-table" aria-label="Directional family attach rates" aria-describedby="association-reading"><thead></thead><tbody></tbody></table></div></article>
 <article class="panel full-panel"><div class="panel-head"><div><p class="eyebrow">MERCHANT × FAMILY</p><h3>What each customer buys—and what is missing</h3><p class="subtext">Green cells open a cross-sell recommendation. Grey cells are existing holdings.</p></div><div class="legend"><span><i class="held"></i>Already purchased</span><span><i class="qualified"></i>Recommended gap</span><span><i class="gap"></i>Other gap</span></div></div><div class="table-wrap"><table id="matrix-table"><thead></thead><tbody></tbody></table></div></article></section>
 <section id="crosssell-view" class="view"><div class="opportunity-layout"><article class="panel"><div class="panel-head"><div><p class="eyebrow">MISSING PRODUCT FAMILY</p><h3>Offer a family they do not buy yet</h3><p class="subtext">Different family · passes the selected attach-rate rule · ranked using account context.</p></div><span id="cross-total" class="count-badge"></span></div><div id="cross-list" class="opportunity-list"></div></article><aside id="cross-detail" class="panel detail-panel"></aside></div></section>
-<section id="upsell-view" class="view"><article class="panel association-panel"><div class="panel-head"><div><p class="eyebrow">PRODUCT × PRODUCT</p><h3 id="product-matrix-title"></h3><p class="subtext">Upsell adds a missing product within a held family. Read across: holders of the row product who also hold the column product. Products and packaging are illustrative.</p></div></div><div class="table-wrap"><table id="product-table" aria-label="Within-family product attach rates"><thead></thead><tbody></tbody></table></div></article><div class="opportunity-layout"><article class="panel"><div class="panel-head"><div><p class="eyebrow">PRODUCT EXPANSION</p><h3>Add a product within a family they already buy</h3></div><span id="up-total" class="count-badge"></span></div><div id="up-list" class="opportunity-list"></div></article><aside id="up-detail" class="panel detail-panel"></aside></div></section>
+<section id="upsell-view" class="view"><article class="panel association-panel"><div class="panel-head"><div><p class="eyebrow">PRODUCT × PRODUCT</p><h3 id="product-matrix-title"></h3><p class="subtext">Upsell adds a missing product within a held family. Read across: holders of the row product who also hold the column product. Products and packaging are illustrative.</p></div></div><div class="table-wrap"><table id="product-table" aria-label="Within-family product attach rates"><thead></thead><tbody></tbody></table></div></article><article class="panel up-grid-panel"><div class="panel-head"><div><p class="eyebrow">CUSTOMER × PRODUCT</p><h3 id="up-grid-title">What each customer buys within this family</h3><p class="subtext" id="up-grid-reading">Customers already buying the selected family. Select a green cell to see the upsell evidence.</p></div><span id="up-grid-count" class="count-badge"></span><div class="legend"><span><i class="held"></i>Already purchased</span><span><i class="qualified"></i>Recommended addition</span><span><i class="gap"></i>Other gap</span></div></div><div class="table-wrap up-grid-scroll"><table id="up-grid-table" aria-label="Customer product holdings and upsell gaps" aria-describedby="up-grid-reading"><thead></thead><tbody></tbody></table></div></article><div class="opportunity-layout"><article class="panel"><div class="panel-head"><div><p class="eyebrow">PRODUCT EXPANSION</p><h3>Add a product within a family they already buy</h3></div><span id="up-total" class="count-badge"></span></div><div id="up-list" class="opportunity-list"></div></article><aside id="up-detail" class="panel detail-panel" tabindex="-1"></aside></div></section>
 <section id="company-view" class="view"><article class="panel company-selector"><label>Merchant<select id="company-filter"></select></label><p class="subtext">Company recommendations cover all held families. Both thresholds apply; portfolio display filters do not hide this merchant's recommendations.</p></article><div id="company-content"></div></section>
 </main></div><div id="toast" class="toast" role="status" aria-live="polite"></div><script>const families = [
   {id:'acceptance',name:'Payment Acceptance',short:'Acceptance'},
@@ -424,6 +432,28 @@ function renderProductMatrix(){
   table.tHead.innerHTML=`<tr><th>Already holds (product A)</th>${options.map(p=>`<th>Also holds (product B)<br>${p.name}</th>`).join('')}</tr>`;
   table.tBodies[0].innerHTML=options.map(p=>`<tr><th scope="row">${p.name}<br><small>${merchants.filter(m=>m.productHoldings.includes(p.id)).length} source merchants</small></th>${options.map(t=>matrixCell(p,t,'product',state.upThreshold)).join('')}</tr>`).join('');
 }
+function renderUpsellGrid(){
+  const family=familyById(state.source),options=catalogue.filter(p=>p.family===family.id),customers=filteredMerchants().filter(m=>m.holdings.includes(family.id)),table=$('#up-grid-table');
+  $('#up-grid-title').textContent=`What each ${family.name} customer buys`;
+  $('#up-grid-count').textContent=`${customers.length} ${customers.length===1?'customer':'customers'}`;
+  table.tHead.innerHTML=`<tr><th scope="col">Customer</th>${options.map(p=>`<th scope="col">${p.name}</th>`).join('')}</tr>`;
+  table.tBodies[0].innerHTML=customers.length?customers.map(m=>{
+    const additions=upCandidates(m,[family.id]);
+    return `<tr><td><button class="text-btn" data-up-customer="${m.id}">${m.name}</button></td>${options.map(p=>{
+      if(m.productHoldings.includes(p.id))return `<td><span class="matrix-cell held" title="${m.name} already buys ${p.name}">Held</span></td>`;
+      const o=additions.find(o=>o.target.id===p.id);
+      return o?`<td><button class="matrix-cell qualified ${o.key===state.selectedUp?'selected-gap':''}" data-up-gap="${o.key}" aria-label="Recommend ${p.name} for ${m.name}" aria-pressed="${o.key===state.selectedUp}" title="${rateText(o.rate)} attach rate · open upsell evidence">Add ↑</button></td>`:`<td><span class="matrix-cell gap" title="${p.name} is missing; the current upsell rule is not met">—</span></td>`;
+    }).join('')}</tr>`;
+  }).join(''):`<tr><td colspan="${options.length+1}" class="empty">No customers in the current filters buy ${family.name}.</td></tr>`;
+  table.querySelectorAll('[data-up-customer]').forEach(el=>el.onclick=()=>openCompany(el.dataset.upCustomer));
+  table.querySelectorAll('[data-up-gap]').forEach(el=>el.onclick=()=>openUpsellGap(el.dataset.upGap));
+}
+function openUpsellGap(key){
+  const o=recommendations('upsell').find(o=>o.key===key);
+  if(!o)return;
+  state.selectedUp=o.key;renderList('upsell');
+  const detail=$('#up-detail');detail.focus({preventScroll:true});detail.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function renderList(kind){
   const isCross=kind==='crosssell',prefix=isCross?'cross':'up',list=recommendations(kind),key=isCross?'selectedCross':'selectedUp';
   $(`#${prefix}-total`).textContent=`${list.length} recommendations`;
@@ -431,7 +461,7 @@ function renderList(kind){
   $(`#${prefix}-list`).innerHTML=list.length?list.map(o=>`<button class="opp-row ${o.key===state[key]?'selected':''}" data-key="${o.key}"><div class="merchant-icon">${initials(o.merchant.name)}</div><div><h4>${o.merchant.name} → ${o.target.name}</h4><p>${isCross?'Missing family':`Within ${o.family.name}`} · already holds ${o.source.name}</p><div class="tags"><span class="tag hot">${rateText(o.rate)} attach rate</span><span class="tag">${o.merchant.countries.length} ${o.merchant.countries.length===1?'country':'countries'}</span><span class="tag">${readiness(o.merchant)}</span></div></div><div class="priority"><strong>${o.priority}</strong><span>Demo priority</span></div></button>`).join(''):`<div class="empty">No ${isCross?'cross-sell':'upsell'} recommendations meet the current rules. Change the comparison family, threshold or filters.</div>`;
   $(`#${prefix}-list`).querySelectorAll('[data-key]').forEach(el=>el.onclick=()=>{state[key]=el.dataset.key;renderList(kind);});
   renderDetail(list.find(o=>o.key===state[key]),prefix);
-  if(!isCross)renderProductMatrix();
+  if(!isCross){renderProductMatrix();renderUpsellGrid();}
 }
 function renderDetail(o,prefix){
   const panel=$(`#${prefix}-detail`);
